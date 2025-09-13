@@ -1,0 +1,86 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # 手動実行を有効化
+
+jobs:
+  # CIが成功した場合のみデプロイ
+  test:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Run linter
+        run: pnpm biome check --write src/
+      
+      - name: Run type check
+        run: pnpm tsc --noEmit
+      
+      - name: Run tests
+        id: test
+        run: pnpm test
+      
+      # テストカバレッジレポート（オプション）
+      - name: Upload test coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+  
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test  # testジョブが成功した場合のみ実行
+    if: github.ref == 'refs/heads/main'  # mainブランチのみ
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+      
+      - name: Setup Environment Variables
+        run: |
+          echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" > .env.production
+          echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> .env.production
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Build for production
+        run: pnpm run build
+      
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JISOU_PROJECT }}
+          channelId: live
+          projectId: jisou-project
