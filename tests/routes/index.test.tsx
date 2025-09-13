@@ -10,7 +10,7 @@ import {
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createRecords, deleteRecords, getRecords } from "@/api/querys";
-import { App } from "@/routes/_index";
+import { App } from "@/routes/index";
 import { mockCreatedRecord, mockLearningRecords } from "../fixtures/mockData";
 
 // Supabase API関数をモック化
