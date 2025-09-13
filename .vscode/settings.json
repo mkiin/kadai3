@@ -40,6 +40,6 @@
   "editor.formatOnSave": true,
 
   "github-actions.workflows.pinned.workflows": [
-    ".github/workflows/firebase-hosting-merge.yml"
-  ]
+    ".github/workflows/cicd.yml"
+  ],
 }
