@@ -2,9 +2,9 @@
 import "@testing-library/jest-dom";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
-import "@testing-library/jest-dom/vitest"
-import { JSDOM } from "jsdom"
-import ResizeObserver from "resize-observer-polyfill"
+import "@testing-library/jest-dom/vitest";
+import { JSDOM } from "jsdom";
+import ResizeObserver from "resize-observer-polyfill";
 
 // 各テスト後のクリーンアップ
 afterEach(() => {
@@ -12,20 +12,41 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-const { window } = new JSDOM()
+const { window } = new JSDOM();
 
-vi.stubGlobal("ResizeObserver", ResizeObserver)
-window["ResizeObserver"] = ResizeObserver
+// ResizeObserver mock
+vi.stubGlobal("ResizeObserver", ResizeObserver);
+window["ResizeObserver"] = ResizeObserver;
 
+// IntersectionObserver mock
 const IntersectionObserverMock = vi.fn(() => ({
   disconnect: vi.fn(),
   observe: vi.fn(),
   takeRecords: vi.fn(),
   unobserve: vi.fn(),
-}))
-vi.stubGlobal("IntersectionObserver", IntersectionObserverMock)
+}));
+vi.stubGlobal("IntersectionObserver", IntersectionObserverMock);
+window["IntersectionObserver"] = IntersectionObserverMock;
 
-window.requestAnimationFrame = (cb) => setTimeout(cb, 1000 / 60)
-window.Element.prototype.scrollIntoView = () => {}
+// Scroll Methods mock
+window.Element.prototype.scrollTo = () => {};
+window.Element.prototype.scrollIntoView = () => {};
 
-Object.assign(global, { window, document: window.document })
+// requestAnimationFrame mock
+window.requestAnimationFrame = (cb) => setTimeout(cb, 1000 / 60);
+
+// URL object mock
+window.URL.createObjectURL = () => "https://i.pravatar.cc/300";
+window.URL.revokeObjectURL = () => {};
+
+// navigator mock
+Object.defineProperty(window, "navigator", {
+  value: {
+    clipboard: {
+      writeText: vi.fn(),
+    },
+  },
+});
+
+// Override globalThis
+Object.assign(global, { window, document: window.document });

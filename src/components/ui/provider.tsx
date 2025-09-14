@@ -1,12 +1,12 @@
-"use client";
-
 import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
-import { ColorModeProvider, type ColorModeProviderProps } from "./color-mode";
+import type { ReactNode } from "react";
 
-export function Provider(props: ColorModeProviderProps) {
+type RootProviderProps = {
+  children: ReactNode;
+};
+
+export function Provider(props: RootProviderProps) {
   return (
-    <ChakraProvider value={defaultSystem}>
-      <ColorModeProvider {...props} />
-    </ChakraProvider>
+    <ChakraProvider value={defaultSystem}>{props.children}</ChakraProvider>
   );
 }

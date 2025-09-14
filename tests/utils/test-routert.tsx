@@ -11,7 +11,7 @@ export function TestRouter ({ component } : {
     const indexRoute = createRoute({
       getParentRoute: () => rootRoute,
       path: "/",
-      component: () => component,
+      component: () => component(),
     });
   
     const routeTree = rootRoute.addChildren([indexRoute]);

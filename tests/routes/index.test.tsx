@@ -1,6 +1,6 @@
 // tests/routes/index.test.tsx
 import { cleanup, screen } from "@testing-library/react";
-import {render} from "../utils/render"
+import { render } from "../utils/render";
 import userEvent from "@testing-library/user-event";
 // import { createRecords, deleteRecords, getRecords } from "@/api/querys";
 import { App } from "@/routes/index";
@@ -19,10 +19,10 @@ afterEach(() => {
 });
 
 describe("学習記録アプリ", () => {
-  it("タイトルが正しく表示される",  () => {
+  it("タイトルが正しく表示される", async () => {
     render(<App />);
 
-    expect(screen.findByText("学習記録一覧")).toBeInTheDocument();
+    expect(await screen.findByText("学習記録一覧")).toBeInTheDocument();
   });
 
   // it("フォームに入力して登録すると新しい記録が追加される", async () => {
@@ -36,7 +36,7 @@ describe("学習記録アプリ", () => {
   //   vi.mocked(createRecords).mockResolvedValue(mockCreatedRecord);
 
   //   // ルーターとコンポーネントをレンダリング
-    
+
   //   render(<RouterProvider router={router} />);
 
   //   // 初期状態の確認（記録が0件）
