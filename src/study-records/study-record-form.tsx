@@ -1,12 +1,4 @@
-import {
-  Button,
-  Field,
-  HStack,
-  Input,
-  Stack,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
+import { Button, Field, Input, Stack, Text, VStack } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import type { Tables } from "@/types/database.types";
 
