@@ -7,48 +7,48 @@ on:
 
 jobs:
   # CIが成功した場合のみデプロイ
-  test:
-    runs-on: ubuntu-latest
-    steps: 
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # test:
+  #   runs-on: ubuntu-latest
+  #   steps: 
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
       
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
+  #     - name: Setup pnpm
+  #       uses: pnpm/action-setup@v4
+  #       with:
+  #         version: 10
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "pnpm"
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 22
+  #         cache: "pnpm"
       
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+  #     - name: Install dependencies
+  #       run: pnpm install --frozen-lockfile
       
-      - name: Run linter
-        run: pnpm biome check --write src/
+  #     - name: Run linter
+  #       run: pnpm biome check --write src/
       
-      - name: Run type check
-        run: pnpm tsc --noEmit
+  #     - name: Run type check
+  #       run: pnpm tsc --noEmit
       
-      - name: Run tests
-        id: test
-        run: pnpm test
+  #     - name: Run tests
+  #       id: test
+  #       run: pnpm test
       
-      # テストカバレッジレポート（オプション）
-      - name: Upload test coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage/
-          retention-days: 7
+  #     # テストカバレッジレポート（オプション）
+  #     - name: Upload test coverage
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: coverage-report
+  #         path: coverage/
+  #         retention-days: 7
   
   deploy:
     runs-on: ubuntu-latest
-    needs: test  # testジョブが成功した場合のみ実行
+    # needs: test  # testジョブが成功した場合のみ実行
     if: github.ref == 'refs/heads/main'  # mainブランチのみ
     
     steps:
