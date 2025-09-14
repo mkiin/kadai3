@@ -34,15 +34,16 @@ export function App() {
     isLoading,
   } = useStudyRecordDialogForm();
 
-  const { data: records, isPending: isLoadingGetRecords } =
+  const { data: records, isLoading: isLoadingGetRecords } =
     useGetLatestStudyRecord(5);
   const { mutateAsync: handleDelete, isPending: isPendingDeleteRecords } =
     useDeleteStudyrecord();
 
   // // 学習時間の合計値
-  const sum = records.reduce((accumulator, currentValue) => {
-    return accumulator + currentValue.time;
-  }, 0);
+  const sum =
+    records?.reduce((accumulator, currentValue) => {
+      return accumulator + currentValue.time;
+    }, 0) ?? 0;
 
   return (
     <Box
@@ -98,7 +99,7 @@ export function App() {
           <Card.Root>
             <Card.Body>
               <Flex align={"center"} justify={"center"} py={"8"} gap={"3"}>
-                <Spinner size={"lg"} colorPalette={"blue"} />
+                <Spinner size={"md"} colorPalette={"blue"} />
                 <Text color={"gray.600"}>読込中...</Text>
               </Flex>
             </Card.Body>
@@ -106,13 +107,13 @@ export function App() {
         ) : (
           <Card.Root>
             <Card.Body>
-              {records.length === 0 ? (
+              {records?.length === 0 ? (
                 <Text color={"gray.500"} textAlign={"center"} py={"8"}>
                   まだ学習記録がありません
                 </Text>
               ) : (
                 <VStack gap={"3"} align={"stretch"}>
-                  {records.map((record) => (
+                  {records?.map((record) => (
                     <Box
                       key={record.id}
                       p={"4"}

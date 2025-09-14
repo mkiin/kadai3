@@ -8,8 +8,8 @@ type RootProviderProps = {
 
 export function RootProvider(props: RootProviderProps) {
   return (
-    <ChakraUIProvider>
-      <QueryClientProvider>{props.children}</QueryClientProvider>
-    </ChakraUIProvider>
+    <QueryClientProvider>
+      <ChakraUIProvider>{props.children}</ChakraUIProvider>
+    </QueryClientProvider>
   );
 }

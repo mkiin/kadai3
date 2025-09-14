@@ -1,10 +1,6 @@
 // supabaseと通信およびTanstack Queryの関数エクスポート
 
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { TablesInsert, TablesUpdate } from "@/types/database.types";
 
@@ -125,7 +121,7 @@ export const useDeleteStudyrecord = () => {
 };
 
 export const useGetLatestStudyRecord = (limit: number = 5) => {
-  return useSuspenseQuery({
+  return useQuery({
     queryKey: ["study-records", "latest", limit],
     queryFn: () => getLatestStudyRecords(limit),
   });

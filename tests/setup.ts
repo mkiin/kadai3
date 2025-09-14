@@ -2,6 +2,9 @@
 import "@testing-library/jest-dom";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
+import "@testing-library/jest-dom/vitest"
+import { JSDOM } from "jsdom"
+import ResizeObserver from "resize-observer-polyfill"
 
 // 各テスト後のクリーンアップ
 afterEach(() => {
@@ -9,42 +12,20 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-// // // Supabaseの型定義に合わせたモック
-// // vi.mock('@/lib/supabase', () => ({
-// //   supabase: {
-// //     from: vi.fn(() => ({
-// //       select: vi.fn().mockReturnThis(),
-// //       insert: vi.fn().mockReturnThis(),
-// //       delete: vi.fn().mockReturnThis(),
-// //       eq: vi.fn().mockReturnThis(),
-// //       single: vi.fn(),
-// //     })),
-// //   },
-// // }))
+const { window } = new JSDOM()
 
-// // // querys.tsのグローバルモック（全テスト共通）
-// // vi.mock('@/routes/querys', () => ({
-// //   getRecords: vi.fn(),
-// //   createRecords: vi.fn(),
-// //   deleteRecords: vi.fn(),
-// // }))
+vi.stubGlobal("ResizeObserver", ResizeObserver)
+window["ResizeObserver"] = ResizeObserver
 
-// // // フェッチAPIのモック（必要に応じて）
-// // global.fetch = vi.fn()
+const IntersectionObserverMock = vi.fn(() => ({
+  disconnect: vi.fn(),
+  observe: vi.fn(),
+  takeRecords: vi.fn(),
+  unobserve: vi.fn(),
+}))
+vi.stubGlobal("IntersectionObserver", IntersectionObserverMock)
 
-// // // ブラウザAPIのモック
-// // beforeAll(() => {
-// //   // ResizeObserver のモック
-// //   global.ResizeObserver = vi.fn().mockImplementation(() => ({
-// //     observe: vi.fn(),
-// //     unobserve: vi.fn(),
-// //     disconnect: vi.fn(),
-// //   }))
+window.requestAnimationFrame = (cb) => setTimeout(cb, 1000 / 60)
+window.Element.prototype.scrollIntoView = () => {}
 
-// //   // IntersectionObserver のモック
-// //   global.IntersectionObserver = vi.fn().mockImplementation(() => ({
-// //     observe: vi.fn(),
-// //     unobserve: vi.fn(),
-// //     disconnect: vi.fn(),
-// //   }))
-// // })
+Object.assign(global, { window, document: window.document })
