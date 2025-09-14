@@ -1,45 +1,26 @@
-import { Dialog, Portal } from "@chakra-ui/react";
-import type { useStudyRecordModal } from "./use-study-record-dialog";
-import type { Tables } from "@/types/database.types";
+import { Dialog, Portal, type UseDialogReturn } from "@chakra-ui/react";
+import type { Tables, TablesInsert } from "@/types/database.types";
 import { StudyRecordForm } from "./study-record-form";
-import { useCreateStudyRecord, useUpdateStudyRecord } from "@/api/study-records-query";
-
-type StudyRecord = Tables<"study_record">;
 
 type StudyRecordDialogProps = {
-  modalState: ReturnType<typeof useStudyRecordModal>;
-  initialData?: StudyRecord;
-  mode?: "create" | "edit";
+  dialog: UseDialogReturn;
+  onCancel: () => void;
+  mode: "create" | "edit";
+  record?: Tables<"study_record">;
+  onSubmit: (data: TablesInsert<"study_record">) => void;
+  isLoading?: boolean;
 };
 
 export function StudyRecordDialog({
-  modalState,
-  initialData,
-  mode = "create"
+  dialog,
+  onCancel,
+  mode,
+  record,
+  onSubmit,
+  isLoading,
 }: StudyRecordDialogProps) {
-  const createMutation = useCreateStudyRecord();
-  const updateMutation = useUpdateStudyRecord();
-
-  const handleSubmit = async (data: any) => {
-    try {
-      if (mode === "create") {
-        await createMutation.mutateAsync(data);
-      } else if (initialData) {
-        await updateMutation.mutateAsync({
-          id: initialData.id,
-          record: data,
-        });
-      }
-      modalState.dialog.setOpen(false);
-    } catch (error) {
-      console.error("Failed to submit:", error);
-    }
-  };
-
-  const isLoading = createMutation.isPending || updateMutation.isPending;
-
   return (
-    <Dialog.RootProvider value={modalState.dialog}>
+    <Dialog.RootProvider value={dialog}>
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
@@ -51,8 +32,10 @@ export function StudyRecordDialog({
             </Dialog.Header>
             <Dialog.Body>
               <StudyRecordForm
-                onSubmit={handleSubmit}
-                initialData={initialData}
+                mode={mode}
+                defaultValues={record}
+                onSubmit={onSubmit}
+                onCancel={onCancel}
                 isLoading={isLoading}
               />
             </Dialog.Body>

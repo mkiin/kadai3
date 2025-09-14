@@ -1,24 +1,33 @@
+import {
+  Button,
+  Field,
+  HStack,
+  Input,
+  Stack,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
-import type {
-  Tables,
-  TablesInsert,
-  TablesUpdate,
-} from "@/types/database.types";
-import { Stack, Field, Input, Button, Text } from "@chakra-ui/react";
+import type { Tables } from "@/types/database.types";
 
-type StudyRecord = Tables<"study_record">;
-type InsetUpdateRecordType = TablesInsert<"study_record"> &
-  TablesUpdate<"study_record">;
+type StudyRecordFormData = {
+  title: string;
+  time: number;
+};
 
 type StudyRecordFormProps = {
-  onSubmit: (data: InsetUpdateRecordType) => Promise<void>;
-  initialData?: StudyRecord;
+  mode: "create" | "edit";
+  defaultValues?: Tables<"study_record">;
+  onSubmit: (data: StudyRecordFormData) => void;
+  onCancel?: () => void;
   isLoading?: boolean;
 };
 
 export function StudyRecordForm({
+  mode,
+  defaultValues,
   onSubmit,
-  initialData,
+  onCancel,
   isLoading,
 }: StudyRecordFormProps) {
   const {
@@ -27,23 +36,20 @@ export function StudyRecordForm({
     formState: { errors, isSubmitting },
     reset,
     watch,
-  } = useForm<InsetUpdateRecordType>({
-    defaultValues: initialData
-      ? {
-          title: initialData.title,
-          time: initialData.time,
-        }
-      : undefined,
+  } = useForm<StudyRecordFormData>({
+    mode: "onChange",
+    defaultValues: {
+      title: defaultValues?.title ?? "",
+      time: defaultValues?.time ?? 0,
+    },
   });
 
   // リアルタイムでフォーム値を監視
   const watchedValues = watch();
 
-  const handleFormSubmit = async (data: InsetUpdateRecordType) => {
-    await onSubmit(data);
-    if (!initialData) {
-      reset(); // 新規作成の場合のみフォームをリセット
-    }
+  const handleFormSubmit = async (data: StudyRecordFormData) => {
+    onSubmit(data);
+    reset();
   };
 
   return (
@@ -52,7 +58,20 @@ export function StudyRecordForm({
         {/* 学習内容入力 */}
         <Field.Root invalid={!!errors.title}>
           <Field.Label htmlFor="title">学習内容</Field.Label>
-          <Input placeholder="例: React Hooks の学習" {...register("title")} />
+          <Input
+            placeholder="例: React Hooks の学習"
+            {...register("title", {
+              required: "内容の入力は必須です",
+              minLength: {
+                value: 1,
+                message: "1文字以上入力してください",
+              },
+              maxLength: {
+                value: 100,
+                message: "100文字以下で入力してください",
+              },
+            })}
+          />
           {errors.title && (
             <Field.ErrorText>{errors.title.message}</Field.ErrorText>
           )}
@@ -61,11 +80,24 @@ export function StudyRecordForm({
         {/* 学習時間入力 */}
         <Field.Root invalid={!!errors.time}>
           <Field.Label htmlFor="time">学習時間（時間）</Field.Label>
-          <Input placeholder="例: 3" {...register("time")} />
+          <Input
+            placeholder="例: 3"
+            {...register("time", {
+              required: "時間の入力は必須です。",
+              min: {
+                value: 0,
+                message: "時間は0以上である必要があります。",
+              },
+              max: {
+                value: 24,
+                message: "時間は24以下である必要があります。",
+              },
+            })}
+          />
           {errors.time && (
             <Field.ErrorText>{errors.time.message}</Field.ErrorText>
           )}
-          <Field.HelperText>0.1〜24時間の間で入力してください</Field.HelperText>
+          <Field.HelperText>0〜24時間の間で入力してください</Field.HelperText>
         </Field.Root>
         {/* プレビュー表示 */}
         <Field.Root>
@@ -93,17 +125,29 @@ export function StudyRecordForm({
           </Stack>
         </Field.Root>
 
-        {/* 送信ボタン */}
-        <Button
-          type="submit"
-          colorPalette="blue"
-          size="lg"
-          width="full"
-          loading={isSubmitting || isLoading}
-          loadingText={initialData ? "更新中..." : "登録中..."}
-        >
-          {initialData ? "更新" : "登録"}
-        </Button>
+        <VStack justify={"end"} gap={"3"}>
+          <Button
+            type="button"
+            colorPalette="green"
+            size="lg"
+            width="full"
+            onClick={onCancel}
+          >
+            キャンセル
+          </Button>
+
+          {/* 送信ボタン */}
+          <Button
+            type="submit"
+            colorPalette="blue"
+            size="lg"
+            width="full"
+            loading={isSubmitting || isLoading}
+            loadingText={mode === "edit" ? "更新中..." : "登録中..."}
+          >
+            {mode === "edit" ? "更新" : "登録"}
+          </Button>
+        </VStack>
       </Stack>
     </form>
   );

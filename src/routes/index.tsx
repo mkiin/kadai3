@@ -1,5 +1,4 @@
 import {
-  Alert,
   Box,
   Button,
   Card,
@@ -12,58 +11,38 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import {
+  useDeleteStudyrecord,
+  useGetLatestStudyRecord,
+} from "@/api/study-records-query";
 import { StudyRecordDialog } from "@/study-records/study-record-dialog";
-import { useStudyRecordModal } from "@/study-records/use-study-record-dialog";
-import { useStudyRecords, useDeleteStudyRecord } from "@/api/study-records-query";
-import type { Tables } from "@/types/database.types";
-
-type RecordType = Tables<"study_record">;
+import { useStudyRecordDialogForm } from "@/study-records/use-study-record-dialog";
 
 export const Route = createFileRoute("/")({
   component: App,
 });
 
 export function App() {
-  // モーダルのカスタムフック
-  const studyRecordModal = useStudyRecordModal();
+  const {
+    dialog,
+    mode,
+    selectedRecord,
+    openCreate,
+    openEdit,
+    onCancel,
+    onSubmit,
+    isLoading,
+  } = useStudyRecordDialogForm();
 
-  // 編集用のデータ状態
-  const [editingRecord, setEditingRecord] = useState<RecordType | undefined>();
-  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
+  const { data: records, isPending: isLoadingGetRecords } =
+    useGetLatestStudyRecord(5);
+  const { mutateAsync: handleDelete, isPending: isPendingDeleteRecords } =
+    useDeleteStudyrecord();
 
-  // TanStack Queryフック
-  const { data: records = [], isLoading, error } = useStudyRecords();
-  const deleteMutation = useDeleteStudyRecord();
-
-  // 学習時間の合計値
+  // // 学習時間の合計値
   const sum = records.reduce((accumulator, currentValue) => {
     return accumulator + currentValue.time;
   }, 0);
-
-  // 新規作成ボタンのハンドラ
-  const handleCreate = () => {
-    setEditingRecord(undefined);
-    setDialogMode("create");
-    studyRecordModal.dialog.setOpen(true);
-  };
-
-  // 編集ボタンのハンドラ
-  const handleEdit = (record: RecordType) => {
-    setEditingRecord(record);
-    setDialogMode("edit");
-    studyRecordModal.dialog.setOpen(true);
-  };
-
-  // 削除ボタンのハンドラ
-  const handleDelete = async (id: string) => {
-    if (!id) return;
-    try {
-      await deleteMutation.mutateAsync(id);
-    } catch (error) {
-      console.error("Failed to delete:", error);
-    }
-  };
 
   return (
     <Box
@@ -78,25 +57,44 @@ export function App() {
             学習記録一覧
           </Heading>
         </Box>
-
+        {/* 合計学習時間表示 */}
+        <Box
+          mb="6"
+          p="4"
+          bg="white"
+          rounded="lg"
+          border="1px solid"
+          borderColor="gray.200"
+        >
+          <Text color="gray.600" fontSize="sm" mb="1">
+            合計学習時間
+          </Text>
+          <Text
+            fontSize="lg"
+            fontWeight="bold"
+            color="gray.500"
+            fontFamily="sans-serif"
+          >
+            {sum}
+            <Text
+              as="span"
+              fontSize="lg"
+              ml="1"
+              color="gray.500"
+              fontWeight="normal"
+            >
+              時間
+            </Text>
+          </Text>
+        </Box>
         {/* 新規作成ボタン */}
         <Box mb={"4"}>
-          <Button colorPalette={"blue"} onClick={handleCreate}>
-            新規作成
+          <Button colorPalette={"blue"} onClick={openCreate}>
+            新規登録
           </Button>
         </Box>
-
-        {/* 合計時間表示 */}
-        {records.length > 0 && (
-          <Box mb={"4"} p={"4"} bg={"blue.50"} rounded={"lg"}>
-            <Text fontWeight={"bold"} color={"blue.900"}>
-              合計学習時間: {sum}時間
-            </Text>
-          </Box>
-        )}
-
         {/* 記録一覧 */}
-        {isLoading ? (
+        {isLoadingGetRecords ? (
           <Card.Root>
             <Card.Body>
               <Flex align={"center"} justify={"center"} py={"8"} gap={"3"}>
@@ -133,8 +131,8 @@ export function App() {
                         <HStack gap={"2"}>
                           <Button
                             size={"sm"}
-                            variant={"ghost"}
-                            onClick={() => handleEdit(record)}
+                            colorPalette={"green"}
+                            onClick={() => openEdit(record)}
                           >
                             編集
                           </Button>
@@ -142,7 +140,7 @@ export function App() {
                             colorPalette={"red"}
                             size={"sm"}
                             onClick={() => handleDelete(record.id)}
-                            loading={deleteMutation.isPending}
+                            loading={isPendingDeleteRecords}
                           >
                             削除
                           </Button>
@@ -155,23 +153,24 @@ export function App() {
             </Card.Body>
           </Card.Root>
         )}
-
         {/* 学習記録を登録・編集するモーダル */}
         <StudyRecordDialog
-          modalState={studyRecordModal}
-          initialData={editingRecord}
-          mode={dialogMode}
+          dialog={dialog}
+          mode={mode}
+          onCancel={onCancel}
+          record={selectedRecord}
+          onSubmit={onSubmit}
+          isLoading={isLoading}
         />
-
         {/* エラーメッセージ */}
-        {error && (
+        {/* {error && (
           <Alert.Root status={"error"} mt={"4"}>
             <Alert.Indicator />
             <Alert.Description fontSize={"sm"}>
               {error instanceof Error ? error.message : "エラーが発生しました"}
             </Alert.Description>
           </Alert.Root>
-        )}
+        )} */}
       </Container>
     </Box>
   );

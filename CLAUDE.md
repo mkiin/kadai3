@@ -20,17 +20,35 @@
 ## プロジェクト構造
 
 ```
+tree src/
 src/
-├── routes/          # TanStack Routerのファイルベースルーティング
-│   ├── __root.tsx   # ルートレイアウトコンポーネント
-│   ├── index.tsx    # ホームページ
-│   └── querys.ts    # クエリ関連の処理
-├── lib/             # ユーティリティとサービス
-│   └── supabase.ts  # Supabaseクライアント設定
-├── types/           # 型定義
-│   └── database.types.ts  # Supabaseの自動生成型定義
-├── main.tsx         # アプリケーションエントリーポイント
-└── styles.css       # グローバルスタイル
+├── api
+│   ├── querys.ts # supabaseからデータ取得
+├── components
+│   ├── root-provider.tsx  # Chakcra UIと Tanstack Queryのプロバイダー
+│   └── ui
+│       ├── color-mode.tsx
+│       ├── provider.tsx
+│       ├── toaster.tsx
+│       └── tooltip.tsx
+├── lib
+│   ├── query-client.ts # tanstack queryのquery clientを生成する関数
+│   └── supabase.ts # supabse の clientを生成する関数
+├── logo.svg
+├── main.tsx
+├── reportWebVitals.ts
+├── routes
+│   ├── index.tsx # メインページ
+│   └── __root.tsx
+├── routeTree.gen.ts
+├── study-records
+│   ├── study-record-dialog.tsx # ダイアログ
+│   ├── study-record-form.tsx # フォーム
+├── styles.css
+├── types
+│   └── database.types.ts
+└── vite-env.d.ts
+
 ```
 
 ## 開発コマンド

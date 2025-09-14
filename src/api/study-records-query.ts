@@ -1,207 +1,132 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { PostgrestError } from "@supabase/supabase-js";
+// supabaseと通信およびTanstack Queryの関数エクスポート
+
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import type {
-  Tables,
-  TablesInsert,
-  TablesUpdate,
-} from "@/types/database.types";
+import type { TablesInsert, TablesUpdate } from "@/types/database.types";
 
-type StudyRecord = Tables<"study_record">;
-type InsertStudyRecord = TablesInsert<"study_record">;
-type UpdateStudyRecord = TablesUpdate<"study_record">;
-
-// Query Keys
-export const studyRecordKeys = {
-  all: ["study-records"] as const,
-  lists: () => [...studyRecordKeys.all, "list"] as const,
-  list: (filters?: any) => [...studyRecordKeys.lists(), filters] as const,
-  details: () => [...studyRecordKeys.all, "detail"] as const,
-  detail: (id: string) => [...studyRecordKeys.details(), id] as const,
-};
-
-// データ取得関数
-const fetchStudyRecords = async (): Promise<StudyRecord[]> => {
-  const { data, error } = await supabase
-    .from("study_record")
-    .select("id, title, time, created_at")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    throw error;
-  }
-
-  return data || [];
-};
-
-// 単一レコード取得関数
-const fetchStudyRecord = async (id: string): Promise<StudyRecord> => {
-  const { data, error } = await supabase
+/**
+ *
+ * @param limit 取得する最新の学習記録の個数
+ * @returns 取得した最新の学習記録
+ */
+const getLatestStudyRecords = async (limit: number) => {
+  const { data: result, error } = await supabase
     .from("study_record")
     .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return result;
 };
 
-// レコード作成関数
-const createStudyRecord = async (
-  record: InsertStudyRecord,
-): Promise<StudyRecord> => {
-  const { data, error } = await supabase
+/**
+ *
+ * @param data : 新たに作成する学習記録のデータ
+ * @returns : result : 作成できた学習記録のデータ
+ */
+const createStudyRecord = async (data: TablesInsert<"study_record">) => {
+  const { data: result, error } = await supabase
     .from("study_record")
-    .insert({
-      title: record.title,
-      time: record.time,
-    })
+    .insert(data)
     .select()
     .single();
 
-  if (error) {
-    throw error;
-  }
-
-  return data;
+  if (error) throw error;
+  return result;
 };
 
-// レコード更新関数
-const updateStudyRecord = async ({
-  id,
-  record,
-}: {
-  id: string;
-  record: UpdateStudyRecord;
-}): Promise<StudyRecord> => {
-  const { data, error } = await supabase
+/**
+ *
+ * @param id 編集する学習記録のid
+ * @param data 編集する学習記録の内容
+ * @returns 編集出来た学習記録の内容
+ */
+const updateStudyRecord = async (
+  id: string,
+  data: TablesUpdate<"study_record">,
+) => {
+  const { data: result, error } = await supabase
     .from("study_record")
-    .update({
-      title: record.title,
-      time: record.time,
-    })
+    .update(data)
     .eq("id", id)
     .select()
     .single();
 
-  if (error) {
-    throw error;
-  }
-
-  return data;
+  if (error) throw error;
+  return result;
 };
 
-// レコード削除関数
-const deleteStudyRecord = async (id: string): Promise<StudyRecord> => {
-  const { data, error } = await supabase
+const deleteStudyRecord = async (id: string) => {
+  const { data: result, error } = await supabase
     .from("study_record")
     .delete()
     .eq("id", id)
     .select()
     .single();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
+  if (error) throw error;
+  return result;
 };
 
-// カスタムフック
-
-// 学習記録一覧を取得
-export const useStudyRecords = () => {
-  return useQuery({
-    queryKey: studyRecordKeys.lists(),
-    queryFn: fetchStudyRecords,
-  });
-};
-
-// 単一の学習記録を取得
-export const useStudyRecord = (id: string) => {
-  return useQuery({
-    queryKey: studyRecordKeys.detail(id),
-    queryFn: () => fetchStudyRecord(id),
-    enabled: !!id,
-  });
-};
-
-// 学習記録を作成
-export const useCreateStudyRecord = () => {
+export const useStudyRecordMutations = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const createMutation = useMutation({
     mutationFn: createStudyRecord,
-    onSuccess: (newRecord) => {
-      // キャッシュを更新
-      queryClient.setQueryData<StudyRecord[]>(
-        studyRecordKeys.lists(),
-        (oldData) => {
-          if (!oldData) return [newRecord];
-          return [newRecord, ...oldData];
-        },
-      );
-    },
-    onError: (error: PostgrestError) => {
-      console.error("Failed to create study record:", error.message);
+    onSuccess: () => {
+      // 学習記録一覧のキャッシュを無効化
+      queryClient.invalidateQueries({
+        queryKey: ["study-records"],
+      });
     },
   });
-};
 
-// 学習記録を更新
-export const useUpdateStudyRecord = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: updateStudyRecord,
-    onSuccess: (updatedRecord) => {
-      // リストのキャッシュを更新
-      queryClient.setQueryData<StudyRecord[]>(
-        studyRecordKeys.lists(),
-        (oldData) => {
-          if (!oldData) return [updatedRecord];
-          return oldData.map((record) =>
-            record.id === updatedRecord.id ? updatedRecord : record,
-          );
-        },
-      );
-      // 詳細のキャッシュも更新
-      queryClient.setQueryData(
-        studyRecordKeys.detail(updatedRecord.id),
-        updatedRecord,
-      );
-    },
-    onError: (error: PostgrestError) => {
-      console.error("Failed to update study record:", error.message);
+  const updateMutation = useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: TablesUpdate<"study_record">;
+    }) => updateStudyRecord(id, data),
+    onSuccess: () => {
+      // 学習記録一覧のキャッシュを無効化
+      queryClient.invalidateQueries({
+        queryKey: ["study-records"],
+      });
     },
   });
+
+  return {
+    create: createMutation.mutateAsync,
+    update: updateMutation.mutateAsync,
+    isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
+    createError: createMutation.error,
+    updateError: updateMutation.error,
+  };
 };
 
-// 学習記録を削除
-export const useDeleteStudyRecord = () => {
+export const useDeleteStudyrecord = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: deleteStudyRecord,
-    onSuccess: (deletedRecord) => {
-      // キャッシュから削除
-      queryClient.setQueryData<StudyRecord[]>(
-        studyRecordKeys.lists(),
-        (oldData) => {
-          if (!oldData) return [];
-          return oldData.filter((record) => record.id !== deletedRecord.id);
-        },
-      );
-      // 詳細のキャッシュも無効化
-      queryClient.invalidateQueries({
-        queryKey: studyRecordKeys.detail(deletedRecord.id),
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["study-records"] });
     },
-    onError: (error: PostgrestError) => {
-      console.error("Failed to delete study record:", error.message);
+    onError: (error) => {
+      console.error("Failed to update study record:", error);
     },
+  });
+};
+
+export const useGetLatestStudyRecord = (limit: number = 5) => {
+  return useSuspenseQuery({
+    queryKey: ["study-records", "latest", limit],
+    queryFn: () => getLatestStudyRecords(limit),
   });
 };
