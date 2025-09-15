@@ -1,4 +1,5 @@
 import { Button, Field, Input, Stack, Text, VStack } from "@chakra-ui/react";
+import { useId } from "react";
 import { useForm } from "react-hook-form";
 import type { Tables } from "@/types/database.types";
 
@@ -22,6 +23,9 @@ export function StudyRecordForm({
   onCancel,
   isLoading,
 }: StudyRecordFormProps) {
+  const titleId = useId();
+  const timeId = useId();
+
   const {
     register,
     handleSubmit,
@@ -49,8 +53,9 @@ export function StudyRecordForm({
       <Stack gap="6">
         {/* 学習内容入力 */}
         <Field.Root invalid={!!errors.title}>
-          <Field.Label htmlFor="title">学習内容</Field.Label>
+          <Field.Label htmlFor={titleId}>学習内容</Field.Label>
           <Input
+            id={titleId}
             placeholder="例: React Hooks の学習"
             {...register("title", {
               required: "内容の入力は必須です",
@@ -71,8 +76,9 @@ export function StudyRecordForm({
 
         {/* 学習時間入力 */}
         <Field.Root invalid={!!errors.time}>
-          <Field.Label htmlFor="time">学習時間（時間）</Field.Label>
+          <Field.Label htmlFor={timeId}>学習時間（時間）</Field.Label>
           <Input
+            id={timeId}
             type="number"
             placeholder="例: 3"
             {...register("time", {

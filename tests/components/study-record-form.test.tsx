@@ -24,21 +24,17 @@ describe("StudyRecordForm", () => {
   });
 
   describe("作成モード", () => {
+    // 作成モード用のhandleSubmitを定義
+    const handleSubmit = async (data: { title: string; time: number }) => {
+      await createStudyRecord(data);
+    };
+
+    beforeEach(() => {
+      vi.mocked(createStudyRecord).mockResolvedValue(mockSingleRecord);
+    });
+
     it("登録できること", async () => {
       const user = userEvent.setup();
-
-      // createStudyRecordのモックを設定
-      vi.mocked(createStudyRecord).mockResolvedValue({
-        id: "new-id",
-        title: "新しい学習記録",
-        time: 5,
-        created_at: new Date().toISOString(),
-      });
-
-      // onSubmitハンドラーを作成
-      const handleSubmit = async (data: { title: string; time: number }) => {
-        await createStudyRecord(data);
-      };
 
       render(
         <StudyRecordForm
@@ -50,12 +46,12 @@ describe("StudyRecordForm", () => {
       );
 
       // フォームに入力
-      const titleInput = screen.getByPlaceholderText("例: React Hooks の学習");
-      const timeInput = screen.getByPlaceholderText("例: 3");
+      const titleInput = screen.getByLabelText("学習内容");
+      const timeInput = screen.getByLabelText("学習時間（時間）");
 
-      await user.type(titleInput, "新しい学習記録");
+      await user.type(titleInput, mockSingleRecord.title);
       await user.clear(timeInput);
-      await user.type(timeInput, "5");
+      await user.type(timeInput, mockSingleRecord.time.toString(10)); // モック用のデータを数値から文字列へ
 
       // 登録ボタンをクリック
       const submitButton = screen.getByRole("button", { name: "登録" });
@@ -64,18 +60,14 @@ describe("StudyRecordForm", () => {
       // createStudyRecordが正しい引数で呼ばれることを確認
       await waitFor(() => {
         expect(createStudyRecord).toHaveBeenCalledWith({
-          title: "新しい学習記録",
-          time: 5,
+          title: mockSingleRecord.title,
+          time: mockSingleRecord.time,
         });
       });
     });
 
     it("学習内容がないときに登録するとエラーがでる", async () => {
       const user = userEvent.setup();
-
-      const handleSubmit = async (data: { title: string; time: number }) => {
-        await createStudyRecord(data);
-      };
 
       render(
         <StudyRecordForm
@@ -87,9 +79,9 @@ describe("StudyRecordForm", () => {
       );
 
       // 学習時間だけ入力
-      const timeInput = screen.getByPlaceholderText("例: 3");
+      const timeInput = screen.getByLabelText("学習時間（時間）");
       await user.clear(timeInput);
-      await user.type(timeInput, "3");
+      await user.type(timeInput, mockSingleRecord.time.toString(10)); // モック用のデータを数値から文字列へ
 
       // 登録ボタンをクリック
       const submitButton = screen.getByRole("button", { name: "登録" });
@@ -108,10 +100,6 @@ describe("StudyRecordForm", () => {
       it("未入力のエラー", async () => {
         const user = userEvent.setup();
 
-        const handleSubmit = async (data: { title: string; time: number }) => {
-          await createStudyRecord(data);
-        };
-
         render(
           <StudyRecordForm
             mode="create"
@@ -122,13 +110,11 @@ describe("StudyRecordForm", () => {
         );
 
         // 学習内容だけ入力
-        const titleInput = screen.getByPlaceholderText(
-          "例: React Hooks の学習",
-        );
+        const titleInput = screen.getByLabelText("学習内容");
         await user.type(titleInput, "学習内容");
 
         // 時間フィールドをクリアして空にする
-        const timeInput = screen.getByPlaceholderText("例: 3");
+        const timeInput = screen.getByLabelText("学習時間（時間）");
         await user.clear(timeInput);
 
         // 登録ボタンをクリック
@@ -149,10 +135,6 @@ describe("StudyRecordForm", () => {
       it("0以上でないときのエラー", async () => {
         const user = userEvent.setup();
 
-        const handleSubmit = async (data: { title: string; time: number }) => {
-          await createStudyRecord(data);
-        };
-
         render(
           <StudyRecordForm
             mode="create"
@@ -163,10 +145,8 @@ describe("StudyRecordForm", () => {
         );
 
         // フォームに入力
-        const titleInput = screen.getByPlaceholderText(
-          "例: React Hooks の学習",
-        );
-        const timeInput = screen.getByPlaceholderText("例: 3");
+        const titleInput = screen.getByLabelText("学習内容");
+        const timeInput = screen.getByLabelText("学習時間（時間）");
         await user.type(titleInput, "学習内容");
         await user.clear(timeInput);
         await user.type(timeInput, "-1");
@@ -190,10 +170,6 @@ describe("StudyRecordForm", () => {
     it("キャンセルボタンが機能すること", async () => {
       const user = userEvent.setup();
 
-      const handleSubmit = async (data: { title: string; time: number }) => {
-        await createStudyRecord(data);
-      };
-
       render(
         <StudyRecordForm
           mode="create"
@@ -213,9 +189,12 @@ describe("StudyRecordForm", () => {
   });
 
   describe("編集モード", () => {
-    it("編集して登録すると更新される", async () => {
-      const user = userEvent.setup();
+    // 編集モード用のhandleSubmitを定義
+    const handleSubmit = async (data: { title: string; time: number }) => {
+      await updateStudyRecord(mockSingleRecord.id, data);
+    };
 
+    beforeEach(() => {
       // updateStudyRecordのモックを設定
       vi.mocked(updateStudyRecord).mockResolvedValue({
         id: mockSingleRecord.id,
@@ -223,10 +202,10 @@ describe("StudyRecordForm", () => {
         time: 10,
         created_at: mockSingleRecord.created_at,
       });
+    });
 
-      const handleSubmit = async (data: { title: string; time: number }) => {
-        await updateStudyRecord(mockSingleRecord.id, data);
-      };
+    it("編集して登録すると更新される", async () => {
+      const user = userEvent.setup();
 
       render(
         <StudyRecordForm
@@ -239,15 +218,11 @@ describe("StudyRecordForm", () => {
       );
 
       // デフォルト値が設定されていることを確認
-      const titleInput = screen.getByPlaceholderText(
-        "例: React Hooks の学習",
-      ) as HTMLInputElement;
-      const timeInput = screen.getByPlaceholderText(
-        "例: 3",
-      ) as HTMLInputElement;
+      const titleInput = screen.getByLabelText("学習内容");
+      const timeInput = screen.getByLabelText("学習時間（時間）");
 
-      expect(titleInput.value).toBe("テスト用記録");
-      expect(timeInput.value).toBe("1");
+      expect(titleInput).toHaveValue(mockSingleRecord.title);
+      expect(timeInput).toHaveValue(mockSingleRecord.time);
 
       // 値を更新
       await user.clear(titleInput);
@@ -271,10 +246,6 @@ describe("StudyRecordForm", () => {
     it("編集モードでもバリデーションが機能すること", async () => {
       const user = userEvent.setup();
 
-      const handleSubmit = async (data: { title: string; time: number }) => {
-        await updateStudyRecord(mockSingleRecord.id, data);
-      };
-
       render(
         <StudyRecordForm
           mode="edit"
@@ -286,7 +257,7 @@ describe("StudyRecordForm", () => {
       );
 
       // タイトルをクリアして空にする
-      const titleInput = screen.getByPlaceholderText("例: React Hooks の学習");
+      const titleInput = screen.getByLabelText("学習内容");
       await user.clear(titleInput);
 
       // 更新ボタンをクリック
@@ -307,6 +278,7 @@ describe("StudyRecordForm", () => {
     it("入力内容がリアルタイムでプレビューに反映される", async () => {
       const user = userEvent.setup();
 
+      // 作成モード用のhandleSubmitを使用
       const handleSubmit = async (data: { title: string; time: number }) => {
         await createStudyRecord(data);
       };
@@ -325,8 +297,8 @@ describe("StudyRecordForm", () => {
       expect(screen.getByText("0時間")).toBeInTheDocument();
 
       // フォームに入力
-      const titleInput = screen.getByPlaceholderText("例: React Hooks の学習");
-      const timeInput = screen.getByPlaceholderText("例: 3");
+      const titleInput = screen.getByLabelText("学習内容");
+      const timeInput = screen.getByLabelText("学習時間（時間）");
 
       await user.type(titleInput, "プレビューテスト");
       await user.clear(timeInput);
