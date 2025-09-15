@@ -34,8 +34,10 @@ jobs:
         run: pnpm tsc --noEmit
       
       - name: Run tests
-        id: test
         run: pnpm run test
+        env : 
+          VITE_SUPABASE_URL : "https://dummy.supabase.co"
+          VITE_SUPABASE_ANON_KEY : "dummy-key"
   
   deploy:
     runs-on: ubuntu-latest
