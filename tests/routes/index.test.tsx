@@ -12,14 +12,12 @@ import {
 import { App } from "@/routes";
 
 // API関数のみモック
-vi.mock(import("@/api/study-record-query"), async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    getLatestStudyRecords: vi.fn(),
-    deleteStudyRecord: vi.fn(),
-  };
-});
+vi.mock("@/api/study-record-query", () => ({
+  createStudyRecord: vi.fn(),
+  updateStudyRecord: vi.fn(),
+  getLatestStudyRecords: vi.fn(),
+  deleteStudyRecord: vi.fn(),
+}));
 
 describe("Appコンポーネント", () => {
   beforeEach(() => {
