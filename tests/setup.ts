@@ -8,7 +8,7 @@ const { window } = new JSDOM();
 
 // ResizeObserver mock
 vi.stubGlobal("ResizeObserver", ResizeObserver);
-window["ResizeObserver"] = ResizeObserver;
+window.ResizeObserver = ResizeObserver;
 
 // IntersectionObserver mock
 const IntersectionObserverMock = vi.fn(() => ({
@@ -18,7 +18,7 @@ const IntersectionObserverMock = vi.fn(() => ({
   unobserve: vi.fn(),
 }));
 vi.stubGlobal("IntersectionObserver", IntersectionObserverMock);
-window["IntersectionObserver"] = IntersectionObserverMock;
+window.IntersectionObserver = IntersectionObserverMock;
 
 // Scroll Methods mock
 window.Element.prototype.scrollTo = () => {};

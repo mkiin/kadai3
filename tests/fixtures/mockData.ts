@@ -1,27 +1,32 @@
-import type { Tables, TablesInsert } from "@/types/database.types";
+// tests/fixtures/mockData.ts
+import type { Tables } from "@/types/database.types";
 
-export const mockLearningRecords: Array<Tables<"study_record">> = [
+export const mockLearningRecords: Tables<"study_record">[] = [
   {
     id: "1",
-    title: "React学習",
-    time: 2,
-    created_at: "2025-01-01T10:00:00Z",
+    title: "React Hooks の学習",
+    time: 3,
+    created_at: "2024-01-01T00:00:00Z",
   },
   {
     id: "2",
-    title: "TypeScript学習",
-    time: 1.5,
-    created_at: "2025-01-01T14:00:00Z",
+    title: "TypeScript 基礎",
+    time: 2,
+    created_at: "2024-01-02T00:00:00Z",
   },
   {
     id: "3",
-    title: "Vitest学習",
-    time: 3,
-    created_at: "2025-01-02T09:00:00Z",
+    title: "Vitest テスト実装",
+    time: 4,
+    created_at: "2024-01-03T00:00:00Z",
   },
 ];
 
-export const mockCreatedRecord: TablesInsert<"study_record"> = {
-  title: "テスト学習記録",
+export const mockEmptyRecords: Tables<"study_record">[] = [];
+
+export const mockSingleRecord: Tables<"study_record"> = {
+  id: "test-id",
+  title: "テスト用記録",
   time: 1,
+  created_at: "2024-01-04T00:00:00Z",
 };

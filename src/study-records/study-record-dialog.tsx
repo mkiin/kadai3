@@ -27,7 +27,7 @@ export function StudyRecordDialog({
           <Dialog.Content>
             <Dialog.Header>
               <Dialog.Title>
-                {mode === "create" ? "学習記録を登録" : "学習記録を編集"}
+                {mode === "create" ? "新規登録" : "記録編集"}
               </Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
