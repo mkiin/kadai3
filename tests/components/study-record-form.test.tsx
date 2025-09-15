@@ -5,10 +5,7 @@ import { userEvent } from "@testing-library/user-event";
 import { mockSingleRecord } from "tests/fixtures/mockData";
 import Wrapper from "tests/utils/wrapper";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  createStudyRecord,
-  updateStudyRecord,
-} from "@/api/study-record-query";
+import { createStudyRecord, updateStudyRecord } from "@/api/study-record-query";
 import { StudyRecordForm } from "@/study-records/study-record-form";
 
 // API関数をモック
@@ -49,7 +46,7 @@ describe("StudyRecordForm", () => {
           onSubmit={handleSubmit}
           onCancel={mockOnCancel}
         />,
-        { wrapper: Wrapper }
+        { wrapper: Wrapper },
       );
 
       // フォームに入力
@@ -86,7 +83,7 @@ describe("StudyRecordForm", () => {
           onSubmit={handleSubmit}
           onCancel={mockOnCancel}
         />,
-        { wrapper: Wrapper }
+        { wrapper: Wrapper },
       );
 
       // 学習時間だけ入力
@@ -121,11 +118,13 @@ describe("StudyRecordForm", () => {
             onSubmit={handleSubmit}
             onCancel={mockOnCancel}
           />,
-          { wrapper: Wrapper }
+          { wrapper: Wrapper },
         );
 
         // 学習内容だけ入力
-        const titleInput = screen.getByPlaceholderText("例: React Hooks の学習");
+        const titleInput = screen.getByPlaceholderText(
+          "例: React Hooks の学習",
+        );
         await user.type(titleInput, "学習内容");
 
         // 時間フィールドをクリアして空にする
@@ -138,7 +137,9 @@ describe("StudyRecordForm", () => {
 
         // エラーメッセージが表示されることを確認
         await waitFor(() => {
-          expect(screen.getByText("時間の入力は必須です。")).toBeInTheDocument();
+          expect(
+            screen.getByText("時間の入力は必須です。"),
+          ).toBeInTheDocument();
         });
 
         // createStudyRecordが呼ばれないことを確認
@@ -158,13 +159,14 @@ describe("StudyRecordForm", () => {
             onSubmit={handleSubmit}
             onCancel={mockOnCancel}
           />,
-          { wrapper: Wrapper }
+          { wrapper: Wrapper },
         );
 
         // フォームに入力
-        const titleInput = screen.getByPlaceholderText("例: React Hooks の学習");
+        const titleInput = screen.getByPlaceholderText(
+          "例: React Hooks の学習",
+        );
         const timeInput = screen.getByPlaceholderText("例: 3");
-
         await user.type(titleInput, "学習内容");
         await user.clear(timeInput);
         await user.type(timeInput, "-1");
@@ -176,7 +178,7 @@ describe("StudyRecordForm", () => {
         // エラーメッセージが表示されることを確認
         await waitFor(() => {
           expect(
-            screen.getByText("時間は0以上である必要があります。")
+            screen.getByText("時間は0以上である必要があります。"),
           ).toBeInTheDocument();
         });
 
@@ -198,7 +200,7 @@ describe("StudyRecordForm", () => {
           onSubmit={handleSubmit}
           onCancel={mockOnCancel}
         />,
-        { wrapper: Wrapper }
+        { wrapper: Wrapper },
       );
 
       // キャンセルボタンをクリック
@@ -233,12 +235,16 @@ describe("StudyRecordForm", () => {
           onSubmit={handleSubmit}
           onCancel={mockOnCancel}
         />,
-        { wrapper: Wrapper }
+        { wrapper: Wrapper },
       );
 
       // デフォルト値が設定されていることを確認
-      const titleInput = screen.getByPlaceholderText("例: React Hooks の学習") as HTMLInputElement;
-      const timeInput = screen.getByPlaceholderText("例: 3") as HTMLInputElement;
+      const titleInput = screen.getByPlaceholderText(
+        "例: React Hooks の学習",
+      ) as HTMLInputElement;
+      const timeInput = screen.getByPlaceholderText(
+        "例: 3",
+      ) as HTMLInputElement;
 
       expect(titleInput.value).toBe("テスト用記録");
       expect(timeInput.value).toBe("1");
@@ -255,13 +261,10 @@ describe("StudyRecordForm", () => {
 
       // updateStudyRecordが正しい引数で呼ばれることを確認
       await waitFor(() => {
-        expect(updateStudyRecord).toHaveBeenCalledWith(
-          mockSingleRecord.id,
-          {
-            title: "更新された記録",
-            time: 10,
-          }
-        );
+        expect(updateStudyRecord).toHaveBeenCalledWith(mockSingleRecord.id, {
+          title: "更新された記録",
+          time: 10,
+        });
       });
     });
 
@@ -279,7 +282,7 @@ describe("StudyRecordForm", () => {
           onSubmit={handleSubmit}
           onCancel={mockOnCancel}
         />,
-        { wrapper: Wrapper }
+        { wrapper: Wrapper },
       );
 
       // タイトルをクリアして空にする
@@ -314,7 +317,7 @@ describe("StudyRecordForm", () => {
           onSubmit={handleSubmit}
           onCancel={mockOnCancel}
         />,
-        { wrapper: Wrapper }
+        { wrapper: Wrapper },
       );
 
       // 初期状態の確認
