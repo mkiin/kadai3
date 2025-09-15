@@ -73,9 +73,11 @@ export function StudyRecordForm({
         <Field.Root invalid={!!errors.time}>
           <Field.Label htmlFor="time">学習時間（時間）</Field.Label>
           <Input
+            type="number"
             placeholder="例: 3"
             {...register("time", {
               required: "時間の入力は必須です。",
+              valueAsNumber: true,
               min: {
                 value: 0,
                 message: "時間は0以上である必要があります。",
