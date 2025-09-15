@@ -10,5 +10,7 @@
   },
   "github-actions.workflows.pinned.workflows": [
     ".github/workflows/cicd.yml"
-  ]
+  ],
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.formatOnSave": true,
 }

@@ -1,21 +1,44 @@
-import { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+// src/__test__/DummyRouter.tsx
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+  RouterProvider,
+} from "@tanstack/react-router";
+import { type FC, type ReactNode, useEffect, useState } from "react";
 
-export function TestRouter ({ component } : {
-  component : () => ReactNode
-} ) {
-    const history = createMemoryHistory({ initialEntries: ["/"] });
-  
-    const rootRoute = createRootRoute({});
-  
+export const TestRouter: FC<{ component: () => ReactNode }> = ({
+  component,
+}) => {
+  const [router] = useState(() => {
+    const rootRoute = createRootRoute({
+      component: Outlet,
+    });
+
     const indexRoute = createRoute({
       getParentRoute: () => rootRoute,
       path: "/",
-      component: () => component(),
+      component,
     });
-  
+
     const routeTree = rootRoute.addChildren([indexRoute]);
-    const router = createRouter({ routeTree, history });
-  
-    return <RouterProvider  router={router}/>
-}
+    const history = createMemoryHistory({ initialEntries: ["/"] });
+    return createRouter({ routeTree, history });
+  });
+
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    router.load().then(() => {
+      setIsLoaded(true);
+    });
+  }, [router]);
+
+  if (!isLoaded) {
+    return null;
+  }
+
+  return <RouterProvider router={router} />;
+};

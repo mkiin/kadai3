@@ -11,12 +11,12 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { createFileRoute } from "@tanstack/react-router";
+import { StudyRecordDialog } from "@/study-records/study-record-dialog";
+import { useStudyRecordDialogForm } from "@/study-records/use-study-record-dialog";
 import {
   useDeleteStudyrecord,
   useGetLatestStudyRecord,
-} from "@/api/study-records-query";
-import { StudyRecordDialog } from "@/study-records/study-record-dialog";
-import { useStudyRecordDialogForm } from "@/study-records/use-study-record-dialog";
+} from "@/study-records/use-study-record-query";
 
 export const Route = createFileRoute("/")({
   component: App,
@@ -34,9 +34,8 @@ export function App() {
     isLoading,
   } = useStudyRecordDialogForm();
 
-  const { data: records, isLoading: isLoadingGetRecords } =
-    useGetLatestStudyRecord(5);
-  const { mutateAsync: handleDelete, isPending: isPendingDeleteRecords } =
+  const { data: records, isLoading: isGetting } = useGetLatestStudyRecord(5);
+  const { mutateAsync: onDelete, isPending: isDeleting } =
     useDeleteStudyrecord();
 
   // // 学習時間の合計値
@@ -95,7 +94,7 @@ export function App() {
           </Button>
         </Box>
         {/* 記録一覧 */}
-        {isLoadingGetRecords ? (
+        {isGetting ? (
           <Card.Root>
             <Card.Body>
               <Flex align={"center"} justify={"center"} py={"8"} gap={"3"}>
@@ -140,8 +139,8 @@ export function App() {
                           <Button
                             colorPalette={"red"}
                             size={"sm"}
-                            onClick={() => handleDelete(record.id)}
-                            loading={isPendingDeleteRecords}
+                            onClick={() => onDelete(record.id)}
+                            loading={isDeleting}
                           >
                             削除
                           </Button>
@@ -163,15 +162,6 @@ export function App() {
           onSubmit={onSubmit}
           isLoading={isLoading}
         />
-        {/* エラーメッセージ */}
-        {/* {error && (
-          <Alert.Root status={"error"} mt={"4"}>
-            <Alert.Indicator />
-            <Alert.Description fontSize={"sm"}>
-              {error instanceof Error ? error.message : "エラーが発生しました"}
-            </Alert.Description>
-          </Alert.Root>
-        )} */}
       </Container>
     </Box>
   );

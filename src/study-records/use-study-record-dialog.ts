@@ -1,6 +1,9 @@
 import { useDialog } from "@chakra-ui/react";
 import { useState } from "react";
-import { useStudyRecordMutations } from "@/api/study-records-query";
+import {
+  useCreateStudyrecord,
+  useUpdateStudyrecord,
+} from "@/study-records/use-study-record-query";
 import type { Tables } from "@/types/database.types";
 
 type StudyRecordFormData = {
@@ -14,7 +17,8 @@ export const useStudyRecordDialogForm = () => {
   const [selectedRecord, setSelectedRecord] = useState<
     Tables<"study_record"> | undefined
   >();
-  const { create, update, isCreating, isUpdating } = useStudyRecordMutations();
+  const { mutateAsync: create, isPending: isCreating } = useCreateStudyrecord();
+  const { mutateAsync: update, isPending: isUpdating } = useUpdateStudyrecord();
 
   const openCreate = () => {
     setMode("create");

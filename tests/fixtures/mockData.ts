@@ -1,8 +1,6 @@
-import type { Tables } from "@/types/database.types";
+import type { Tables, TablesInsert } from "@/types/database.types";
 
-type RecordType = Tables<"study_record">;
-
-export const mockLearningRecords: RecordType[] = [
+export const mockLearningRecords: Array<Tables<"study_record">> = [
   {
     id: "1",
     title: "React学習",
@@ -23,14 +21,7 @@ export const mockLearningRecords: RecordType[] = [
   },
 ];
 
-export const mockNewRecord: Omit<RecordType, "id" | "created_at"> = {
-  title: "新しい学習",
+export const mockCreatedRecord: TablesInsert<"study_record"> = {
+  title: "テスト学習記録",
   time: 1,
-};
-
-export const mockCreatedRecord: RecordType = {
-  id: "4",
-  title: "新しい学習",
-  time: 4,
-  created_at: "2025-01-03T10:00:00Z",
 };
